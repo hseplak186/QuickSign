@@ -1,6 +1,6 @@
 .main {
     position: absolute;
-    top: 65%;
+    top: 85%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
@@ -42,15 +42,14 @@ button {
     width: 50%;
 }
 
-
-.head{
-    text-align: center ;
+.head {
+    text-align: center;
     font-family: "Bungee Shade", sans-serif;
     font-weight: 400;
     font-style: normal;
-    color:whitesmoke;
+    color: whitesmoke;
 }
 
-body{
-    background:linear-gradient(45deg,red,rgb(155, 41, 211),orange,rgb(27, 244, 237)) ;
+body {
+    background: linear-gradient(45deg, red, rgb(155, 41, 211), orange, rgb(27, 244, 237));
 }

@@ -1,4 +1,7 @@
 let history = [];
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
 
 const colorPicker = document.getElementById('colorPicker');
 const canvasColor = document.getElementById('canvasColor');
@@ -6,10 +9,8 @@ const canvas = document.getElementById('myCanvas');
 const undoButton = document.getElementById('undoButton');
 const clearButton = document.getElementById('clearButton');
 const saveButton = document.getElementById('saveButton');
-const fontPicker = document.getElementById('fontPicker');
-const textInput = document.getElementById('textInput');
+const retrieveButton = document.getElementById('retrieveButton');
 const fontSizePicker = document.getElementById('fontSizePicker'); // add new element
-
 
 const ctx = canvas.getContext('2d');
 
@@ -23,64 +24,93 @@ canvasColor.addEventListener('change', (event) => {
     ctx.fillRect(0, 0, 800, 500);
 });
 
+function getCoordinates(event) {
+    if (event.touches) {
+        return {
+            x: event.touches[0].clientX - canvas.offsetLeft,
+            y: event.touches[0].clientY - canvas.offsetTop
+        };
+    }
+    return {
+        x: event.clientX - canvas.offsetLeft,
+        y: event.clientY - canvas.offsetTop
+    };
+}
+
 canvas.addEventListener('mousedown', (event) => {
     isDrawing = true;
-    lastX = event.offsetX;
-    lastY = event.offsetY;
+    const coords = getCoordinates(event);
+    lastX = coords.x;
+    lastY = coords.y;
 });
 
 canvas.addEventListener('mousemove', (event) => {
-    if (isDrawing) {
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(event.offsetX, event.offsetY);
-        ctx.stroke();
-
-        lastX = event.offsetX;
-        lastY = event.offsetY;
-    }
-});
-
-canvas.addEventListener('contextmenu', (event) => {
-    event.preventDefault();
+    if (!isDrawing) return;
+    const coords = getCoordinates(event);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    lastX = coords.x;
+    lastY = coords.y;
 });
 
 canvas.addEventListener('mouseup', () => {
     isDrawing = false;
 });
 
+canvas.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    isDrawing = true;
+    const coords = getCoordinates(event);
+    lastX = coords.x;
+    lastY = coords.y;
+});
+
+canvas.addEventListener('touchmove', (event) => {
+    if (!isDrawing) return;
+    event.preventDefault();
+    const coords = getCoordinates(event);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    lastX = coords.x;
+    lastY = coords.y;
+});
+
+canvas.addEventListener('touchend', () => {
+    isDrawing = false;
+});
+
+canvas.addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+});
+
 fontSizePicker.addEventListener('change', (event) => {
     ctx.lineWidth = event.target.value;
-    // ctx.font = `${fontPicker.value} ${event.target.value}px`;
 });
 
 clearButton.addEventListener('click', () => {
-    // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-})
+});
 
-// Add event listener for the save button
 saveButton.addEventListener('click', () => {
     localStorage.setItem('canvasContents', canvas.toDataURL());
-    // Create a new <a> element
     let link = document.createElement('a');
-
-    // Set the download attribute and the href attribute of the <a> element
     link.download = 'my-canvas.png';
     link.href = canvas.toDataURL();
-
-    // Dispatch a click event on the <a> element
     link.click();
 });
 
-// Add event listener for the retrieve button
 retrieveButton.addEventListener('click', () => {
-    // Retrieve the saved canvas contents from local storage
     let savedCanvas = localStorage.getItem('canvasContents');
-
     if (savedCanvas) {
         let img = new Image();
         img.src = savedCanvas;
-        ctx.drawImage(img, 0, 0);
+        img.onload = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+        };
     }
 });
